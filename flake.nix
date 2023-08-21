@@ -15,6 +15,12 @@
       inputs.haskellNix.follows = "chainweb-node/haskellNix";
       inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
     };
+    chainweb-peers.url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=include-different-networks";
+    # chainweb-peers = {
+    #   url = "git+ssh://git@github.com/kadena-io/chainweb-peers/emmanuel/include-diferent-networks.git";
+    #   inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
+    #   inputs.haskellNix.follows = "chainweb-node/haskellNix";
+    # };
     nix-exe-bundle = { url = "github:3noch/nix-bundle-exe"; flake = false; };
   };
 
@@ -28,6 +34,8 @@
         chainweb-mining-client = bundle inputs.chainweb-mining-client.packages.${system}.default;
         chainweb-node = bundle inputs.chainweb-node.packages.${system}.default;
         chainweb-node-l2 = bundle inputs.chainweb-node-l2.packages.${system}.default;
+        chainweb-peers = bundle inputs.chainweb-peers.packages.${system}.default;
+        tx-traces = bundle inputs.chainweb-peers.packages.${system}.tx-traces;
       });
       pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
       bundle = pkgs.callPackage inputs.nix-exe-bundle {};
@@ -35,6 +43,7 @@
         modules/chainweb-data.nix
         modules/chainweb-node.nix
         modules/chainweb-mining-client.nix
+        modules/chainweb-peers.nix
         modules/http-server.nix
         modules/ttyd.nix
         modules/landing-page/module.nix
