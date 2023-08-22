@@ -33,7 +33,7 @@ in
   config = mkIf cfg.enable {
     packages = [ pkgs.sqlite ];
 
-    systemd.services.tx-traces = {
+    processes.tx-traces = {
       description = "TX Traces Service";
       after = [ "chainweb-peers.timer" ];
       requires = [ "chainweb-peers.timer" ];
@@ -43,7 +43,7 @@ in
       };
     };
 
-    systemd.services.chainweb-peers = {
+    processes.chainweb-peers = {
       description = "Chainweb Peers Service - Run once and then controlled by timer";
       serviceConfig = {
         Type = "oneshot";
@@ -51,7 +51,7 @@ in
       };
     };
 
-    systemd.timers.chainweb-peers = {
+    processes.timers.chainweb-peers = {
       description = "Timer for chainweb-peers service";
       wantedBy = [ "timers.target" ];
       timerConfig = {
