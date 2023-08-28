@@ -15,12 +15,11 @@
       inputs.haskellNix.follows = "chainweb-node/haskellNix";
       inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
     };
-    chainweb-peers.url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks";
-    # chainweb-peers = {
-    #   url = "git+ssh://git@github.com/kadena-io/chainweb-peers/emmanuel/include-diferent-networks.git";
-    #   inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
-    #   inputs.haskellNix.follows = "chainweb-node/haskellNix";
-    # };
+    chainweb-peers = {
+      url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks";
+      inputs.haskellNix.follows = "chainweb-node/haskellNix";
+      inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
+    };
     nix-exe-bundle = { url = "github:3noch/nix-bundle-exe"; flake = false; };
   };
 
