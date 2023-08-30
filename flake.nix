@@ -3,7 +3,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     devenv.url = "github:kadena-io/devenv/devnet-setup";
-    chainweb-node.url = "github:kadena-io/chainweb-node/edmund/fast-devnet";
+    # chainweb-node.url = "github:kadena-io/chainweb-node/edmund/fast-devnet";
+    chainweb-node.url = "github:kadena-io/chainweb-node";
     chainweb-node-l2.url = "github:kadena-io/chainweb-node/edmund/l2-spv-poc";
     chainweb-data = {
       url = "github:kadena-io/chainweb-data/enis/avoid-p2p-dependency";
