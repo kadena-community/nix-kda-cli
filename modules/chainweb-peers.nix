@@ -3,18 +3,53 @@
 let
 
   start-chainweb-peers = pkgs.writeShellScript "start-chainweb-peers" ''
-    ${pkgs.chainweb-peers}/bin/chainweb-peers --config-file ${chainweb-peers-config} --peer-registry-connection ${peerRegistryConnection}
+    ${pkgs.chainweb-peers}/bin/chainweb-peers --config-file ${./chainweb-peers/chainweb-peers.yaml} --bootstrap-node localhost:443
   '';
-  peerRegistryConnection = "sqlite-connection: ${databasePath}";
+  # peerRegistryConnection = "\{\"sqlite-connection\": \"${databasePath}\"\}";
   databasePath = "/var/lib/chainweb-peers/data.sqlite";
-  chainwebPeersConfigContent = config.chainweb-peers.chainwebPeersConfigContent or "";
-  chainweb-peers-config = pkgs.writeText "chainweb-peers.conf" chainwebPeersConfigContent;
-  txTracesConfigContent = config.chainweb-peers.txTracesConfigContent or "";
-  tx-traces-config = pkgs.writeText "tx-traces.conf" txTracesConfigContent;
   elasticApiKey = config.chainweb-peers.elasticApiKey or "";
   elasticEndpoint = config.chainweb-peers.elasticEndpoint or "";
   start-tx-traces = pkgs.writeShellScript "start-tx-traces" ''
-    ${pkgs.tx-traces}/bin/tx-traces --config-file ${tx-traces-config} --elastic-endpoint ${elasticEndpoint} --elastic-api-key ${elasticApiKey}
+    ${pkgs.tx-traces}/bin/tx-traces --config-file ${./chainweb-peers/tx-traces.yaml} --elastic-endpoint ${elasticEndpoint} --elastic-api-key ${elasticApiKey}
+  '';
+  chainweb-peers-looper = pkgs.writeShellScript "chainweb-peers-looper.sh" ''
+    #!/bin/bash
+    while true; do
+      ${start-chainweb-peers}
+      sleep 10m
+    done
+  '';
+  checkSqliteScript = pkgs.writeShellScript "check_sqlite.sh" ''
+    #!/bin/bash
+
+    DB_FILE="${databasePath}"
+    RETRIES=10 Replace with the number of desired retries
+    TOTAL_DURATION_MINS=5  # Replace with the total duration in minutes
+    SLEEP_INTERVAL=$((TOTAL_DURATION_MINS * 60 / RETRIES))
+
+    for ((i=1; i<=RETRIES; i++)); do
+      # Check if the SQLite file exists
+      if [ -f "$DB_FILE" ]; then
+          # Check for the existence of specific tables and their state
+          TABLE_CHECK=$(sqlite3 $DB_FILE "SELECT name FROM sqlite_master WHERE type='table' AND name='peers';")
+          if [ -n "$TABLE_CHECK" ]; then
+             # check if number of rows is greater than 0
+             ROW_COUNT=$(sqlite3 $DB_FILE "SELECT COUNT(*) FROM peers;")
+             if [ "$ROW_COUNT" -gt 0 ]; then
+                 echo "Checks passed."
+                 exit 0
+             fi
+          fi
+      fi
+
+      # If not the last retry, sleep for the interval
+      if [ $i -ne $RETRIES ]; then
+          sleep $SLEEP_INTERVAL
+      fi
+    done
+
+    echo "Checks failed after $RETRIES retries."
+    exit 1
   '';
 
 in
@@ -23,13 +58,17 @@ in
     packages = [ pkgs.chainweb-peers pkgs.tx-traces pkgs.sqlite ];
 
     processes.chainweb-peers = {
-      exec = "${pkgs.expect}/bin/unbuffer ${start-chainweb-peers}";
+      exec = "${pkgs.expect}/bin/unbuffer ${chainweb-peers-looper}";
       process-compose.depends_on = {
         chainweb-node.condition = "process_healthy";
       };
     };
     processes.tx-traces = {
       exec = "${pkgs.expect}/bin/unbuffer ${start-tx-traces}";
+      process-compose.depends_on = {
+        chainweb-peers.condition = "service_started";
+        script.condition = checkSqliteScript;
+      };
     };
 
     # processes.chainweb-peers-dashboard = {
