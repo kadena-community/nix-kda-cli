@@ -3,10 +3,12 @@
 let
 
   start-chainweb-peers = pkgs.writeShellScript "start-chainweb-peers" ''
-    ${pkgs.chainweb-peers}/bin/chainweb-peers --config-file ${./chainweb-peers/chainweb-peers.yaml} --bootstrap-node localhost:443
+    ${pkgs.chainweb-peers}/bin/chainweb-peers \
+    --config-file ${./chainweb-peers/chainweb-peers.yaml} \
+    --bootstrap-node localhost:1848 \
   '';
-  # peerRegistryConnection = "\{\"sqlite-connection\": \"${databasePath}\"\}";
   databasePath = "/var/lib/chainweb-peers/data.sqlite";
+  # peersFile = "/var/lib/chainweb-peers/peers.json";
   elasticApiKey = config.chainweb-peers.elasticApiKey or "";
   elasticEndpoint = config.chainweb-peers.elasticEndpoint or "";
   start-tx-traces = pkgs.writeShellScript "start-tx-traces" ''

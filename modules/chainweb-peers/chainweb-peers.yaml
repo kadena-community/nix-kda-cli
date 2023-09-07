@@ -1,15 +1,18 @@
 bootstrapNodes:
 - hostname: localhost
-  port: 443
+  port: 1848
 dotFile: null
 elasticApiKey: null
 elasticEndpoint: null
+geoDbFile: null
 locationsFile: null
 logHandle: stdout
-logLevel: info
+logLevel: debug
 network: development
-peersFile: peers.2023-08-31T233906.json
+peersFile: /var/lib/chainweb-peers/peers.2023-09-05T205655.json
 printStats: false
 requestTimeout: 1000000
-peersRegistryConnection:
-  sqlite-connection: /var/lib/chainweb-peers/data.sqlite
+PeerRegistryConnection:
+  sqlite-connection:
+    file-name: peers.sqlite
+    flush-tables: false
