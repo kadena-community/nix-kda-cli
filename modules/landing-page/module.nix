@@ -2,24 +2,53 @@
 with pkgs.lib;
 let
   cfg = config.sites.landing-page;
-  mkSection = subsections: concatStringsSep "\n" (
+  concatAsLinesSep = sep: strings: builtins.concatStringsSep sep (map
+    (str: if hasSuffix "\n" str then str else str + "\n")
+    strings
+  );
+  mkSection = sep: subsections: concatAsLinesSep sep (
     map (section: section.markdown) (
       builtins.sort (a: b: a.order < b.order)
         (builtins.attrValues subsections)
     )
   );
+  indexArgs = {
+    services = mkSection "\n" cfg.services;
+    commands = mkSection "" cfg.commands;
+    containerApi = optionalString (cfg.container-api.enable) ''
+      ## Container API
+
+      ### Ports
+      ${cfg.container-api.ports}
+
+      ### Folders
+      ${cfg.container-api.folders}
+    '';
+  };
   landing-page-root = pkgs.runCommand "landing-page" {} ''
     mkdir -p $out
+    hash=$(basename $out | cut -d'-' -f1)
     ${pkgs.mustache-go}/bin/mustache \
-      ${builtins.toFile "index-md-input.json" (builtins.toJSON {
-        services = mkSection cfg.services;
-        commands = mkSection cfg.commands;
-      })} \
+      ${builtins.toFile "index-md-input.json" (builtins.toJSON indexArgs)} \
       ${./index.md.mustache} \
       > index.md
 
-    ${pkgs.pandoc}/bin/pandoc --template=${./index.html} -s index.md -o $out/index.html
-    ln -s ${./static} $out/static
+    cp index.md $out/index.md
+
+    ${pkgs.pandoc}/bin/pandoc \
+      --template=${./index.html} \
+      -s index.md \
+      --variable store-hash=$hash \
+      -o $out/index.html
+
+    mkdir -p $out/static
+
+    ${pkgs.xorg.lndir}/bin/lndir ${./static} $out/static
+
+    mkdir -p $out/static/fonts
+    for font in KodeMono-SemiBold; do
+      cp ${pkgs.kode-mono}/share/fonts/truetype/$font.ttf $out/static/fonts
+    done
   '';
   sectionsType = types.attrsOf (types.submodule {
     options = {
@@ -58,12 +87,53 @@ in
       type = sectionsType;
       description = ''Subsections of the "Available Commands" section.'';
     };
+    container-api = {
+      enable = mkEnableOption "container-api-docs";
+      ports = mkOption {
+        type = types.lines;
+        description = "Ports exposed by the container";
+        default = "";
+      };
+      folders = mkOption {
+        type = types.lines;
+        description = "Special folders for interfacing with the container";
+        default = "";
+      };
+    };
   };
 
   config = {
     services.http-server.servers.devnet.extraConfig = ''
+      location = / {
+        root ${cfg.root}/;
+        try_files /index.html =404;
+        # Make sure the browser checks the ETag every time
+        add_header Cache-Control "no-cache, must-revalidate";
+      }
       location / {
         alias ${cfg.root}/;
+
+        types {
+          text/html html htm shtml;
+          text/css css;
+          text/javascript js;
+          image/jpeg jpg jpeg;
+          image/png png;
+          image/gif gif;
+          image/svg+xml svg svgz;
+          image/webp webp;
+          image/x-icon ico;
+          text/plain txt;
+          text/xml xml;
+          application/xml rss atom;
+          application/json json;
+          application/font-woff woff;
+          application/font-woff2 woff2;
+          application/vnd.ms-fontobject eot;
+          application/x-font-ttf ttf;
+          font/opentype otf;
+          application/octet-stream bin;
+        }
       }
     '';
   };

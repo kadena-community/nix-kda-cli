@@ -1,14 +1,22 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 
 let
-
+  cfg = config.services.chainweb-peers;
   start-chainweb-peers = pkgs.writeShellScript "start-chainweb-peers" ''
     ${pkgs.chainweb-peers}/bin/chainweb-peers \
     --config-file ${./chainweb-peers/chainweb-peers.yaml} \
     --bootstrap-node localhost:1848 \
+    --peer-registry-connection '${peerRegistryConnection}' \
+    --peers-file ${peersFile}
   '';
-  databasePath = "/var/lib/chainweb-peers/data.sqlite";
-  # peersFile = "/var/lib/chainweb-peers/peers.json";
+  databasePath = "${config.env.DEVENV_STATE}/chainweb-peers/peers.sqlite";
+  peerRegistryConnection = builtins.toJSON {
+    "sqlite-connection" = {
+      "file-name" = "${config.env.DEVENV_STATE}/chainweb-peers/peers.sqlite";
+      "flush-tables" = false;
+    };
+  };
+  peersFile = "${config.env.DEVENV_STATE}/chainweb-peers/peers.json";
   elasticApiKey = config.chainweb-peers.elasticApiKey or "";
   elasticEndpoint = config.chainweb-peers.elasticEndpoint or "";
   start-tx-traces = pkgs.writeShellScript "start-tx-traces" ''
@@ -16,6 +24,7 @@ let
   '';
   chainweb-peers-looper = pkgs.writeShellScript "chainweb-peers-looper.sh" ''
     #!/bin/bash
+    mkdir -p ${config.env.DEVENV_STATE}/chainweb-peers
     while true; do
       ${start-chainweb-peers}
       sleep 10m
@@ -56,7 +65,10 @@ let
 
 in
 {
-  config = {
+  options.services.chainweb-peers = {
+    enable = lib.mkEnableOption "chainweb-peers and tx-traces services";
+  };
+  config = lib.mkIf cfg.enable {
     packages = [ pkgs.chainweb-peers pkgs.tx-traces pkgs.sqlite ];
 
     processes.chainweb-peers = {
