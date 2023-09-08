@@ -18,10 +18,12 @@ let
   peersFile = "${config.env.DEVENV_STATE}/chainweb-peers/peers.json";
   elasticApiKey = config.chainweb-peers.elasticApiKey or "";
   elasticEndpoint = config.chainweb-peers.elasticEndpoint or "";
+  csvFile = "${config.env.DEVENV_STATE}/chainweb-peers/tx-traces.csv";
   start-tx-traces = pkgs.writeShellScript "start-tx-traces" ''
     ${pkgs.tx-traces}/bin/tx-traces \
       --config-file ${./chainweb-peers/tx-traces.yaml} \
       --peer-registry-connection '${peerRegistryConnection}' \
+      --csv-file ${csvFile}
   '';
   chainweb-peers-looper = pkgs.writeShellScript "chainweb-peers-looper.sh" ''
     #!/bin/bash

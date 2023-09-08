@@ -296,17 +296,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1694143710,
-        "narHash": "sha256-jbgIEqe51BBBoNAr6poEnvdwVkVKRmtpOLpvGUQ/FIc=",
+        "lastModified": 1694144298,
+        "narHash": "sha256-dUkAr8PjGwrp6NjZcTB7jHuOCITN7G3jjRUfgWQi2mE=",
         "ref": "emmanuel/include-different-networks",
-        "rev": "873c73acba80fd26738a7547125548d7495c8430",
-        "revCount": 31,
+        "rev": "1c1f4c7d400f2090b42af036a99acc71af7f7e28",
+        "revCount": 32,
         "type": "git",
         "url": "ssh://git@github.com/kadena-io/chainweb-peers"
       },
       "original": {
         "ref": "emmanuel/include-different-networks",
-        "rev": "873c73acba80fd26738a7547125548d7495c8430",
+        "rev": "1c1f4c7d400f2090b42af036a99acc71af7f7e28",
         "type": "git",
         "url": "ssh://git@github.com/kadena-io/chainweb-peers"
       }
