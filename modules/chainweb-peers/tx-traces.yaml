@@ -1,5 +1,3 @@
 chainwebVersion: development
 peersFile: null
-peersRegistryConnection:
-  sqlite-connection: /var/lib/chainweb-peers/data.sqlite
 

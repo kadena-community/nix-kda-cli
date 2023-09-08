@@ -2,7 +2,7 @@ dotFile: null
 geoDbFile: null
 locationsFile: null
 logHandle: stdout
-logLevel: debug
+logLevel: warn
 network: development
 printStats: false
 requestTimeout: 1000000

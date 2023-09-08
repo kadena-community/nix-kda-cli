@@ -12,39 +12,44 @@ let
   databasePath = "${config.env.DEVENV_STATE}/chainweb-peers/peers.sqlite";
   peerRegistryConnection = builtins.toJSON {
     "sqlite-connection" = {
-      "file-name" = "${config.env.DEVENV_STATE}/chainweb-peers/peers.sqlite";
-      "flush-tables" = false;
+      "file-name" = databasePath;
     };
   };
   peersFile = "${config.env.DEVENV_STATE}/chainweb-peers/peers.json";
   elasticApiKey = config.chainweb-peers.elasticApiKey or "";
   elasticEndpoint = config.chainweb-peers.elasticEndpoint or "";
   start-tx-traces = pkgs.writeShellScript "start-tx-traces" ''
-    ${pkgs.tx-traces}/bin/tx-traces --config-file ${./chainweb-peers/tx-traces.yaml} --elastic-endpoint ${elasticEndpoint} --elastic-api-key ${elasticApiKey}
+    ${pkgs.tx-traces}/bin/tx-traces \
+      --config-file ${./chainweb-peers/tx-traces.yaml} \
+      --peer-registry-connection '${peerRegistryConnection}' \
   '';
   chainweb-peers-looper = pkgs.writeShellScript "chainweb-peers-looper.sh" ''
     #!/bin/bash
     mkdir -p ${config.env.DEVENV_STATE}/chainweb-peers
     while true; do
+      echo "Starting chainweb-peers..."
       ${start-chainweb-peers}
-      sleep 10m
+      echo "chainweb-peers exited. Restarting in 10s..."
+      sleep 60s
     done
   '';
   checkSqliteScript = pkgs.writeShellScript "check_sqlite.sh" ''
     #!/bin/bash
 
     DB_FILE="${databasePath}"
-    RETRIES=10 Replace with the number of desired retries
-    TOTAL_DURATION_MINS=5  # Replace with the total duration in minutes
+    RETRIES=100 Replace with the number of desired retries
+    TOTAL_DURATION_MINS=60  # Replace with the total duration in minutes
     SLEEP_INTERVAL=$((TOTAL_DURATION_MINS * 60 / RETRIES))
 
     for ((i=1; i<=RETRIES; i++)); do
       # Check if the SQLite file exists
       if [ -f "$DB_FILE" ]; then
           # Check for the existence of specific tables and their state
+          echo "Checking SQLite file $DB_FILE for tables and rows..."
           TABLE_CHECK=$(sqlite3 $DB_FILE "SELECT name FROM sqlite_master WHERE type='table' AND name='peers';")
           if [ -n "$TABLE_CHECK" ]; then
              # check if number of rows is greater than 0
+             echo "Checking for rows in table peers..."
              ROW_COUNT=$(sqlite3 $DB_FILE "SELECT COUNT(*) FROM peers;")
              if [ "$ROW_COUNT" -gt 0 ]; then
                  echo "Checks passed."
@@ -80,8 +85,11 @@ in
     processes.tx-traces = {
       exec = "${pkgs.expect}/bin/unbuffer ${start-tx-traces}";
       process-compose.depends_on = {
-        chainweb-peers.condition = "service_started";
-        script.condition = checkSqliteScript;
+        chainweb-node.condition = "process_healthy";
+        # These two options below don't seem to work as expected
+        # This will work so long as the sqlite file is not deleted between runs of the service
+        # chainweb-peers.condition = "service_started";
+        # script.condition = checkSqliteScript;
       };
     };
 
