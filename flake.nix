@@ -15,6 +15,11 @@
       inputs.haskellNix.follows = "chainweb-node/haskellNix";
       inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
     };
+    txg = {
+      url = "github:kadena-io/txg/emmanuel/nix-flake";
+      inputs.haskellNix.follows = "chainweb-node/haskellNix";
+      inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
+    };
     chainweb-peers = {
       # url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks";
       url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks&rev=1c1f4c7d400f2090b42af036a99acc71af7f7e28";
@@ -52,6 +57,7 @@
         chainweb-mining-client = bundleWithInfo' "chainweb-mining-client";
         chainweb-node = bundleWithInfo' "chainweb-node";
         chainweb-peers = bundle inputs.chainweb-peers.packages.${system}.default;
+        txg = bundle inputs.txg.packages.${system}.default;
         tx-traces = bundle inputs.chainweb-peers.packages.${system}.tx-traces;
         pact = bundleWithInfo' "pact";
         block-explorer = inputs.block-explorer.packages.x86_64-linux.static // {
@@ -66,6 +72,7 @@
         modules/chainweb-node.nix
         modules/chainweb-mining-client.nix
         modules/chainweb-peers.nix
+        modules/txg.nix
         modules/http-server.nix
         modules/ttyd.nix
         modules/landing-page/module.nix
@@ -104,9 +111,11 @@
           services.http-server.enable = true;
         };
         chainweb-peers = {
-          services.chainweb-node.enable = true;
-          services.chainweb-peers.enable = true;
+          imports = [minimal];
           services.elasticsearch.enable = true;
+          services.chainweb-peers.enable = true;
+          services.txg.enable = true;
+          sites.explorer.enable = true;
         };
         local = {
           imports = [minimal];

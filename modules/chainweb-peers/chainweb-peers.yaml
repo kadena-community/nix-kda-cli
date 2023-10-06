@@ -3,6 +3,6 @@ geoDbFile: null
 locationsFile: null
 logHandle: stdout
 logLevel: warn
-network: development
+network: fast-development
 printStats: false
 requestTimeout: 1000000
