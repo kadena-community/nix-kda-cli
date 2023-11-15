@@ -3,7 +3,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     devenv.url = "github:cachix/devenv";
-    chainweb-node.url = "github:kadena-io/chainweb-node";
+    chainweb-node.url = "github:kadena-io/chainweb-node/emmanuel/fast-devnet-changes";
     chainweb-node-l2.url = "github:kadena-io/chainweb-node/edmund/l2-spv-poc";
     chainweb-data = {
       url = "github:kadena-io/chainweb-data";
@@ -16,13 +16,13 @@
       inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
     };
     txg = {
-      url = "github:kadena-io/txg/emmanuel/nix-flake";
+      url = "github:kadena-io/txg/6022a7d8d64f57be42d3c2f3d8204c8dafd21ea5"; # the current txg commit on the branch emmanuel/nix-flake
       inputs.haskellNix.follows = "chainweb-node/haskellNix";
       inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
     };
     chainweb-peers = {
       # url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks";
-      url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks&rev=1c1f4c7d400f2090b42af036a99acc71af7f7e28";
+      url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks&rev=7289c85a1f320b66c7a781c3cf88f591a7d5c00c";
       inputs.haskellNix.follows = "chainweb-node/haskellNix";
       inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
     };
@@ -72,6 +72,8 @@
         modules/chainweb-node.nix
         modules/chainweb-mining-client.nix
         modules/chainweb-peers.nix
+        modules/cut-checker.nix
+        modules/mempoolPending.nix
         modules/txg.nix
         modules/http-server.nix
         modules/ttyd.nix
@@ -114,8 +116,9 @@
           imports = [minimal];
           services.elasticsearch.enable = true;
           services.chainweb-peers.enable = true;
+          services.cut-checker.enable = true;
           services.txg.enable = true;
-          sites.explorer.enable = true;
+          # services.mempoolPending.enable = true;
         };
         local = {
           imports = [minimal];

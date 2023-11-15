@@ -5,7 +5,7 @@ let
   start-chainweb-peers = pkgs.writeShellScript "start-chainweb-peers" ''
     ${pkgs.chainweb-peers}/bin/chainweb-peers \
     --config-file ${./chainweb-peers/chainweb-peers.yaml} \
-    --bootstrap-node localhost:1848 \
+    --bootstrap-node localhost:1789 \
     --peer-registry-connection '${peerRegistryConnection}' \
     --peers-file ${peersFile}
   '';
@@ -20,6 +20,10 @@ let
   elasticEndpoint = config.chainweb-peers.elasticEndpoint or "";
   csvFile = "${config.env.DEVENV_STATE}/chainweb-peers/tx-traces.csv";
   start-tx-traces = pkgs.writeShellScript "start-tx-traces" ''
+    #!/bin/bash
+    RESPONSE=$(curl -sk -XPOST https://localhost:1789/chainweb/0.0/fast-development/chain/0/mempool/getPending)
+    echo $RESPONSE
+    sleep 10s
     ${pkgs.tx-traces}/bin/tx-traces \
       --config-file ${./chainweb-peers/tx-traces.yaml} \
       --peer-registry-connection '${peerRegistryConnection}' \

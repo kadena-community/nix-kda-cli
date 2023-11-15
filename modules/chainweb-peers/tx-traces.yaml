@@ -1,3 +1,4 @@
 chainwebVersion: fast-development
 peersFile: null
+debugElastic: false
 
