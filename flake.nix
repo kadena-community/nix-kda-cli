@@ -22,7 +22,7 @@
     };
     chainweb-peers = {
       # url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks";
-      url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks&rev=7289c85a1f320b66c7a781c3cf88f591a7d5c00c";
+      url = "git+ssh://git@github.com/kadena-io/chainweb-peers?ref=emmanuel/include-different-networks&rev=bb948b06a05b1744e0cb5eb1a1e21f2172f6179c";
       inputs.haskellNix.follows = "chainweb-node/haskellNix";
       inputs.nixpkgs.follows = "chainweb-node/nixpkgs";
     };

@@ -21,9 +21,9 @@ let
   csvFile = "${config.env.DEVENV_STATE}/chainweb-peers/tx-traces.csv";
   start-tx-traces = pkgs.writeShellScript "start-tx-traces" ''
     #!/bin/bash
-    RESPONSE=$(curl -sk -XPOST https://localhost:1789/chainweb/0.0/fast-development/chain/0/mempool/getPending)
-    echo $RESPONSE
-    sleep 10s
+    # RESPONSE=$(curl -sk -XPOST https://localhost:1789/chainweb/0.0/fast-development/chain/0/mempool/getPending)
+    # echo $RESPONSE
+    sleep 20s
     ${pkgs.tx-traces}/bin/tx-traces \
       --config-file ${./chainweb-peers/tx-traces.yaml} \
       --peer-registry-connection '${peerRegistryConnection}' \
